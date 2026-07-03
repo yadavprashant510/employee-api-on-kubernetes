@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: employee
+  labels:
+    enviornment: development
+    project: employee-api
+    managed-by: kubectl
