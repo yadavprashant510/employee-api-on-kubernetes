@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-api
+  namespace: employee
+  labels:
+      app: employee-api
+      environment: development
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: employee-api
+  template:
+    metadata:
+      name: employee-api-pod
+      labels:
+        app: employee-api
+    spec:
+      containers:
+      - name: employee-api
+        image: employee-api:v1
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
