@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-
+import socket
 from app.app import app_info
 from app.logger import get_logger
 
@@ -13,7 +13,7 @@ employees = {1: {"id": 1, "name": "Prashant", "role": "DevOps Engineer"}}
 
 @employee_bp.route("/")
 def home():
-    return jsonify({**app_info(), "api": "/api/v1", "status": "running"})
+    return jsonify({**app_info(), "api": "/api/v1", "status": "running", "hostname": socket.gethostname()})
 
 
 @employee_bp.route("/api/v1/employees", methods=["GET"])
