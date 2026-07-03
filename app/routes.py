@@ -1,0 +1,79 @@
+from flask import Blueprint, jsonify, request
+
+from app.logger import get_logger
+
+employee_bp = Blueprint("employees", __name__)
+
+logger = get_logger(__name__)
+
+# Temporary in-memory database
+employees = {1: {"id": 1, "name": "Prashant", "role": "DevOps Engineer"}}
+
+
+@employee_bp.route("/")
+def home():
+    return jsonify({"application": "Employee API", "version": "1.0.0", "status": "running"})
+
+
+@employee_bp.route("/employees", methods=["GET"])
+def get_employees():
+    logger.info("Fetching all employees")
+    return jsonify(list(employees.values()))
+
+
+@employee_bp.route("/employees/<int:employee_id>", methods=["GET"])
+def get_employee(employee_id):
+
+    employee = employees.get(employee_id)
+
+    if not employee:
+        return jsonify({"status": "error", "message": "Employee not found"}), 404
+
+    return jsonify(employee)
+
+
+@employee_bp.route("/employees", methods=["POST"])
+def create_employee():
+
+    data = request.get_json()
+
+    new_id = max(employees.keys(), default=0) + 1
+
+    employee = {"id": new_id, "name": data["name"], "role": data["role"]}
+
+    employees[new_id] = employee
+
+    logger.info(f"Employee created : {new_id}")
+
+    return jsonify(employee), 201
+
+
+@employee_bp.route("/employees/<int:employee_id>", methods=["PUT"])
+def update_employee(employee_id):
+
+    employee = employees.get(employee_id)
+
+    if not employee:
+        return jsonify({"status": "error", "message": "Employee not found"}), 404
+
+    data = request.get_json()
+
+    employee["name"] = data.get("name", employee["name"])
+    employee["role"] = data.get("role", employee["role"])
+
+    logger.info(f"Employee updated : {employee_id}")
+
+    return jsonify(employee)
+
+
+@employee_bp.route("/employees/<int:employee_id>", methods=["DELETE"])
+def delete_employee(employee_id):
+
+    if employee_id not in employees:
+        return jsonify({"status": "error", "message": "Employee not found"}), 404
+
+    employees.pop(employee_id)
+
+    logger.info(f"Employee deleted : {employee_id}")
+
+    return jsonify({"status": "success", "message": "Employee deleted"})
