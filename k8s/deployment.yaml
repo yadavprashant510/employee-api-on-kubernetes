@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: employee-api
-        image: employee-api:v1
+        image: employee-api:v4
         resources:
           requests:
             memory: "128Mi"
@@ -29,6 +29,44 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 5000
+        startupProbe:
+
+          httpGet:
+
+            path: /health
+
+            port: 5000
+
+          periodSeconds: 5
+
+          failureThreshold: 30
+
+        livenessProbe:
+
+          httpGet:
+
+            path: /health
+
+            port: 5000
+
+          initialDelaySeconds: 10
+
+          periodSeconds: 10
+
+        readinessProbe:
+
+          httpGet:
+
+            path: /ready
+
+            port: 5000
+
+          initialDelaySeconds: 5
+
+          periodSeconds: 5
+        env:
+        - name: SIMULATION_MODE
+          value: "normal"
         envFrom:
         - configMapRef:
             name: employee-config

@@ -12,3 +12,6 @@ class Config:
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
     DATABASE_HOST = os.getenv("DATABASE_HOST", "localhost")
+
+    # Probe Simulation
+    SIMULATION_MODE = os.getenv("SIMULATION_MODE", "normal")
