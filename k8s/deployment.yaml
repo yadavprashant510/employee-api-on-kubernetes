@@ -32,3 +32,10 @@ spec:
 
         - secretRef:
             name: employee-secret
+        volumeMounts:
+          - name: employee-storage
+            mountPath: /app/data
+      volumes:
+        - name: employee-storage
+          persistentVolumeClaim:
+            claimName: employee-pvc
