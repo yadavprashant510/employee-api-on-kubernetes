@@ -17,6 +17,7 @@ spec:
       labels:
         app: employee-api
     spec:
+      serviceAccountName: employee-api-svc-account
       containers:
       - name: employee-api
         image: employee-api:v4
@@ -29,6 +30,18 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 5000
+        securityContext:
+          runAsNonRoot: true
+
+          runAsUser: 1000
+
+          allowPrivilegeEscalation: false
+
+          readOnlyRootFilesystem: true
+
+          capabilities:
+            drop:
+              - ALL
         startupProbe:
 
           httpGet:
@@ -76,7 +89,11 @@ spec:
         volumeMounts:
           - name: employee-storage
             mountPath: /app/data
+          - name: tmp
+            mountPath: /tmp
       volumes:
         - name: employee-storage
           persistentVolumeClaim:
             claimName: employee-pvc
+        - name: tmp
+          emptyDir: {}

@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+
+metadata:
+  name: employee-reader-binding
+  namespace: employee
+
+subjects:
+- kind: ServiceAccount
+  name: employee-api-svc-account
+  namespace: employee
+
+roleRef:
+  kind: Role
+  name: employee-reader-role
+  apiGroup: rbac.authorization.k8s.io
