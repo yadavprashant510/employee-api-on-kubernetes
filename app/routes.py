@@ -1,3 +1,6 @@
+import math
+import time
+
 from flask import Blueprint, jsonify, request
 import socket
 from app.app import app_info
@@ -86,3 +89,15 @@ def delete_employee(employee_id):
     logger.info(f"Employee deleted : {employee_id}")
 
     return jsonify({"status": "success", "message": "Employee deleted"})
+
+@employee_bp.route("/cpu")
+def cpu_load():
+
+    end = time.time() + 60
+
+    while time.time() < end:
+        math.sqrt(987654321)
+
+    return {
+        "status": "CPU test completed"
+    }
