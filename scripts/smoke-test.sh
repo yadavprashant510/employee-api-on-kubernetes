@@ -1,8 +1,10 @@
+#!/bin/bash
+
 set -x # debug mode
 
 kubectl get pods -n employee
 
-kubectl get ingress
+kubectl get ingress -n employee
 
 kubectl get svc -n employee
 
