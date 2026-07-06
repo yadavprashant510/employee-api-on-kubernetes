@@ -6,7 +6,7 @@ Expand the chart name.
 {{- default .Chart.Name .Values.app.name | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
-{{/*
+{{/*s
 Create Full Name
 */}}
 

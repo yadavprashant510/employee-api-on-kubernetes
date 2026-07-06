@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "employee-api.name" . }}-deployment
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "employee-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "employee-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      name: employee-api-pod
+      labels:
+        {{- include "employee-api.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "employee-api.name" . }}-svc-account
+      containers:
+      - name: {{ include "employee-api.name" . }}-container
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        ports:
+        - containerPort: {{ .Values.container.port }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        startupProbe:
+
+          httpGet:
+
+            path: /health
+
+            port: 5000
+
+          periodSeconds: 5
+
+          failureThreshold: 30
+
+        livenessProbe:
+
+          httpGet:
+
+            path: /health
+
+            port: {{ .Values.container.port }}
+
+          initialDelaySeconds: 10
+
+          periodSeconds: 10
+
+        readinessProbe:
+
+          httpGet:
+
+            path: /ready
+
+            port: 5000
+
+          initialDelaySeconds: 5
+
+          periodSeconds: 5
+        env:
+        - name: SIMULATION_MODE
+          value: "normal"
+        envFrom:
+        - configMapRef:
+            name: employee-config
+
+        - secretRef:
+            name: employee-secret
+        volumeMounts:
+          - name: employee-storage
+            mountPath: /app/data
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+        - name: employee-storage
+          persistentVolumeClaim:
+            claimName: employee-pvc
+        - name: tmp
+          emptyDir: {}

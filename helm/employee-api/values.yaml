@@ -9,6 +9,10 @@ service:
   type: ClusterIP
   port: 80
   targetPort: 5000
+namespace:
+  name: employee-ns
+container:
+  port: 5000
 
 resources:
   requests:
@@ -35,3 +39,11 @@ app:
 
 serviceAccount:
   create: true
+
+securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
