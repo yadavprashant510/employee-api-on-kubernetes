@@ -1,4 +1,7 @@
 import logging
+import sys
+
+from pythonjsonlogger import jsonlogger
 
 from app.config import Config
 
@@ -11,9 +14,9 @@ def get_logger(name):
 
     logger.setLevel(Config.LOG_LEVEL)
 
-    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s : %(message)s")
+    formatter = jsonlogger.JsonFormatter("%(asctime)s %(levelname)s %(message)s")
 
-    console = logging.StreamHandler()
+    console = logging.StreamHandler(sys.stdout)
     console.setFormatter(formatter)
 
     logger.addHandler(console)
