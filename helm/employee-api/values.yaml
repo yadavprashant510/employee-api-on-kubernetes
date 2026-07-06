@@ -26,6 +26,8 @@ ingress:
   enabled: true
   className: nginx
   host: employee.local
+  path: /
+  pathType: Prefix
 
 autoscaling:
   enabled: true
