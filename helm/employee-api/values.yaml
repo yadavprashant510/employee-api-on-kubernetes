@@ -56,3 +56,9 @@ config:
   LOG_LEVEL: INFO
 
   ENVIRONMENT: development
+
+# later we will move to secret vault this for practice purpose never hardcode the sensitive info in gitq
+secret:
+  DATABASE_USER: admin
+  DATABASE_PASSWORD: password123
+  JWT_SECRET: my-super-secret-key

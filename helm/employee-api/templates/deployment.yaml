@@ -70,7 +70,7 @@ spec:
             name: {{ include "employee-api.name" . }}-config
 
         - secretRef:
-            name: employee-secret
+            name: {{ include "employee-api.name" . }}-secret
         volumeMounts:
           - name: employee-storage
             mountPath: /app/data
