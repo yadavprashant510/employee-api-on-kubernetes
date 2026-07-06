@@ -1,0 +1,63 @@
+# Grafana Alloy Helm Chart Values for Log Collection
+# Mounts alloy-config ConfigMap and configures cluster-wide RBAC for pod discovery
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: alloy
+
+controller:
+  type: daemonset
+  replicas: 1
+
+# Tell Helm NOT to create its own config - we'll mount from alloy-config ConfigMap
+alloy:
+  configMap:
+    create: false
+
+# Mount the alloy-config ConfigMap that was created by install.sh
+extraVolumes:
+  - name: alloy-config-volume
+    configMap:
+      name: alloy-config
+      defaultMode: 0644
+
+extraVolumeMounts:
+  - name: alloy-config-volume
+    mountPath: /etc/alloy
+
+# Pod security and resource constraints
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Cluster-wide RBAC for pod discovery across all namespaces
+clusterRole:
+  name: alloy-cluster-role
+  rules:
+    # Pod discovery and log reading
+    - apiGroups: [""]
+      resources: ["pods", "pods/log", "nodes"]
+      verbs: ["get", "list", "watch"]
+    # Namespace listing for multi-namespace discovery
+    - apiGroups: [""]
+      resources: ["namespaces"]
+      verbs: ["get", "list", "watch"]
+    # Service discovery
+    - apiGroups: [""]
+      resources: ["services", "endpoints"]
+      verbs: ["get", "list", "watch"]
+
+clusterRoleBinding:
+  name: alloy-cluster-role-binding
