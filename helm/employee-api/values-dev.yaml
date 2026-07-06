@@ -1,3 +1,5 @@
 config:
-
   ENVIRONMENT: development
+
+autoscaling:
+  enabled: false
