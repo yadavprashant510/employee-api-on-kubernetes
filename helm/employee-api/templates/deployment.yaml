@@ -67,7 +67,7 @@ spec:
           value: "normal"
         envFrom:
         - configMapRef:
-            name: employee-config
+            name: {{ include "employee-api.name" . }}-config
 
         - secretRef:
             name: employee-secret
