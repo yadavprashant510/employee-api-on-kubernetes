@@ -30,3 +30,11 @@ helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 app.kubernetes.io/name: {{ include "employee-api.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{- define "employee-api.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+{{ include "employee-api.name" . }}
+{{- else -}}
+{{ .Values.serviceAccount.name }}
+{{- end -}}
+{{- end }}

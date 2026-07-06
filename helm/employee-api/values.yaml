@@ -2,17 +2,26 @@ replicaCount: 2
 
 image:
   repository: employee-api
-  tag: latest
+  tag: v6
   pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
   port: 80
-  targetPort: 5000
+  targetPort: 6000
 namespace:
   name: employee-ns
 container:
-  port: 5000
+  port: 6000
+
+rbac:
+
+  create: true
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
 
 resources:
   requests:
@@ -25,7 +34,7 @@ resources:
 ingress:
   enabled: true
   className: nginx
-  host: employee.local
+  host: api.employee.local
   path: /
   pathType: Prefix
 
@@ -34,6 +43,7 @@ autoscaling:
   minReplicas: 2
   maxReplicas: 5
   targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
 
 app:
   name: employee-api
@@ -41,11 +51,13 @@ app:
 
 serviceAccount:
   create: true
+  name: employee-api-svc-account
 
 securityContext:
   runAsNonRoot: true
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
+  runAsUser: 1000
   capabilities:
     drop:
       - ALL

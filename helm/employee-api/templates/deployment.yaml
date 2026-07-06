@@ -16,7 +16,11 @@ spec:
       labels:
         {{- include "employee-api.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ include "employee-api.name" . }}-svc-account
+      serviceAccountName: {{ if .Values.serviceAccount.create }}
+            {{ include "employee-api.name" . }}-svc-account
+            {{ else }}
+            {{ .Values.serviceAccount.name }}
+            {{ end }}
       containers:
       - name: {{ include "employee-api.name" . }}-container
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -79,6 +83,6 @@ spec:
       volumes:
         - name: employee-storage
           persistentVolumeClaim:
-            claimName: employee-pvc
+            claimName: {{ include "employee-api.name" . }}-pvc
         - name: tmp
           emptyDir: {}

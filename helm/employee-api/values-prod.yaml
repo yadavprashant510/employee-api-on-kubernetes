@@ -8,3 +8,7 @@ autoscaling:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
   targetMemoryUtilizationPercentage: 50
+
+rbac:
+
+  create: true
