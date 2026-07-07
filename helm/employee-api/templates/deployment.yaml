@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "employee-api.name" . }}-deployment
+  name: {{ include "employee-api.name" . }}
   namespace: {{ .Values.namespace.name }}
   labels:
     {{- include "employee-api.labels" . | nindent 4 }}
@@ -37,7 +37,7 @@ spec:
 
             path: /health
 
-            port: 5000
+            port: {{ .Values.container.port }}
 
           periodSeconds: 5
 
@@ -61,7 +61,7 @@ spec:
 
             path: /ready
 
-            port: 5000
+            port: {{ .Values.container.port }}
 
           initialDelaySeconds: 5
 

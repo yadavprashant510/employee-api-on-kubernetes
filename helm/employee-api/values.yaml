@@ -8,11 +8,11 @@ image:
 service:
   type: ClusterIP
   port: 80
-  targetPort: 6000
+  targetPort: 5000
 namespace:
   name: employee-ns
 container:
-  port: 6000
+  port: 5000
 
 rbac:
 
@@ -34,7 +34,7 @@ resources:
 ingress:
   enabled: true
   className: nginx
-  host: api.employee.local
+  host: employee.local
   path: /
   pathType: Prefix
 
