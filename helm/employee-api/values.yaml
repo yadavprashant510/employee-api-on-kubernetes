@@ -1,8 +1,8 @@
 replicaCount: 2
 
 image:
-  repository: employee-api
-  tag: v6
+  repository: your-dockerhub-username/employee-api
+  tag: latest
   pullPolicy: IfNotPresent
 
 service:

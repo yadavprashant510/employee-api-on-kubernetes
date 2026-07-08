@@ -50,4 +50,22 @@ jobs:
 
       - name: Helm Template Validation
         run: helm template employee-api ./helm/employee-api
-              
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/employee-api:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/employee-api:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/employee-api:${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+                    
