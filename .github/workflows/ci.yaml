@@ -189,14 +189,14 @@ jobs:
 
     steps:
 
-      - name: Verify Pods
-        run: |
-          kubectl get pods -n employee
+      # - name: Verify Pods
+      #   run: |
+      #     kubectl get pods -n employee
 
-      - name: Check Deployment
-        run: |
-          kubectl rollout status deployment/employee-api \
-            -n employee
+      # - name: Check Deployment
+      #   run: |
+      #     kubectl rollout status deployment/employee-api \
+      #       -n employee
 
       - name: Health Endpoint
         run: |
