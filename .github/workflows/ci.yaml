@@ -201,6 +201,13 @@ jobs:
       - name: Health Endpoint
         run: |
           curl --fail http://employee.local/health
+      - name: Deployment Summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Image: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Namespace: employee" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: Success" >> $GITHUB_STEP_SUMMARY
   rollback:
     name: Rollback Deployment
     runs-on: self-hosted
