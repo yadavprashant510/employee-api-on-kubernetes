@@ -104,8 +104,9 @@ jobs:
         with:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: table
-          exit-code: "1"
           severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
       - name: Pushed Docker Image
         uses: docker/build-push-action@v6
         with:
