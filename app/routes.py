@@ -16,7 +16,14 @@ employees = {1: {"id": 1, "name": "Prashant", "role": "DevOps Engineer"}}
 
 @employee_bp.route("/")
 def home():
-    return jsonify({**app_info(), "api": "/api/v1", "status": "running", "hostname": socket.gethostname()})
+    return jsonify(
+        {
+            **app_info(),
+            "api": "/api/v1",
+            "status": "running",
+            "hostname": socket.gethostname(),
+        }
+    )
 
 
 @employee_bp.route("/api/v1/employees", methods=["GET"])
@@ -49,7 +56,12 @@ def create_employee():
     missing = [field for field in required if field not in data]
 
     if missing:
-        return jsonify({"status": "error", "message": f"Missing fields: {', '.join(missing)}"}), 400
+        return (
+            jsonify(
+                {"status": "error", "message": f"Missing fields: {', '.join(missing)}"}
+            ),
+            400,
+        )
 
     employee = {"id": new_id, "name": data["name"], "role": data["role"]}
 
@@ -90,6 +102,7 @@ def delete_employee(employee_id):
 
     return jsonify({"status": "success", "message": "Employee deleted"})
 
+
 @employee_bp.route("/cpu")
 def cpu_load():
 
@@ -98,6 +111,4 @@ def cpu_load():
     while time.time() < end:
         math.sqrt(987654321)
 
-    return {
-        "status": "CPU test completed"
-    }
+    return {"status": "CPU test completed"}
