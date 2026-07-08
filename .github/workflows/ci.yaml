@@ -93,29 +93,29 @@ jobs:
           push: false
           load: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/employee-api:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           ####################################################################
           # Security Scan
           ####################################################################
       - name: Scan Docker Image
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/employee-api:${{ github.sha }}
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: table
           exit-code: "1"
           severity: HIGH,CRITICAL
       - name: Pushed Docker Image
-        uses: docker/push-action@v6
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           load: false
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/employee-api:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/employee-api:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/employee-api:${{ github.ref_name }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -173,7 +173,7 @@ jobs:
           helm upgrade --install employee-api ./helm/employee-api \
             --namespace employee \
             --create-namespace \
-            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/employee-api \
+            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }} \
             --set image.tag=${{ github.sha }}
 
       - name: Wait for Rollout
@@ -200,7 +200,18 @@ jobs:
 
       - name: Health Endpoint
         run: |
-          curl --fail http://employee.local/health
+          for i in {1..12}; do
+          if curl --fail http://employee.local/health; then
+            echo "Application is healthy"
+            exit 0
+          fi
+
+          echo "Waiting for application..."
+          sleep 10
+          done
+
+          echo "Smoke test failed"
+          exit 1
       - name: Deployment Summary
         run: |
           echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
@@ -214,7 +225,7 @@ jobs:
 
     needs: smoke-test
 
-    if: failure()
+    if: ${{ failure() }}
 
     steps:
 
