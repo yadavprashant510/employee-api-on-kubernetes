@@ -41,8 +41,14 @@ The project focuses on production-ready practices instead of simple deployments.
 - Production-ready project structure
 
 ---
-
 ## 🏗️ Architecture
+
+See the detailed architecture:
+
+- [Application Architecture](docs/diagrams/architecture.md)
+- [CI/CD Pipeline](docs/diagrams/cicd.md)
+- [Observability](docs/diagrams/observability.md)
+- [Helm Deployment Flow](docs/diagrams/helm.md)
 
 ```text
                     Internet
