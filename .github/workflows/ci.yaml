@@ -15,7 +15,7 @@ permissions:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
-  
+
 env:
   IMAGE_NAME: employee-api
 
@@ -145,3 +145,72 @@ jobs:
         with:
           name: helm-chart
           path: dist/*.tgz
+
+  deploy:
+    name: Deploy Application
+    runs-on: self-hosted
+    needs: package
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Verify Cluster
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      # - name: Configure Kubernetes Context
+      #   run: |
+      #     mkdir -p ~/.kube
+      #     echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install employee-api ./helm/employee-api \
+            --namespace employee \
+            --create-namespace \
+            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/employee-api \
+            --set image.tag=${{ github.sha }}
+
+      - name: Wait for Rollout
+        run: |
+          kubectl rollout status deployment/employee-api \
+            -n employee \
+            --timeout=180s
+  smoke-test:
+    name: Smoke Test
+    runs-on: self-hosted
+
+    needs: deploy
+
+    steps:
+
+      - name: Verify Pods
+        run: |
+          kubectl get pods -n employee
+
+      - name: Check Deployment
+        run: |
+          kubectl rollout status deployment/employee-api \
+            -n employee
+
+      - name: Health Endpoint
+        run: |
+          curl --fail http://employee.local/health
+  rollback:
+    name: Rollback Deployment
+    runs-on: self-hosted
+
+    needs: smoke-test
+
+    if: failure()
+
+    steps:
+
+      - name: Rollback Helm Release
+        run: |
+          helm rollback employee-api

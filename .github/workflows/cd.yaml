@@ -1,11 +1,27 @@
-name: CD
+name: Continuous Delivery
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Continuous Integration
+
+    types:
+      - completed
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
 
+  deploy:
+
+    if: >
+      github.event.workflow_run.conclusion == 'success'
+
+    runs-on: ubuntu-latest
     steps:
-      - run: echo "Hello"
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      
+      - name: Download Helm Package
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-chart
+          path: dist
