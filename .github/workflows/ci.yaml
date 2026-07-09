@@ -18,6 +18,7 @@ concurrency:
 
 env:
   IMAGE_NAME: employee-api
+  RELEASE_NAME: employee-api
 
 jobs:
 
@@ -86,19 +87,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: false
-          load: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          ####################################################################
-          # Security Scan
-          ####################################################################
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest .
+          
       - name: Scan Docker Image
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -108,16 +102,9 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
       - name: Pushed Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          load: false
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
 
 
 
@@ -171,16 +158,19 @@ jobs:
       - name: Deploy with Helm
         run: |
           helm upgrade --install employee-api ./helm/employee-api \
-            --namespace employee \
+            --namespace employee-ns \
             --create-namespace \
             --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }} \
             --set image.tag=${{ github.sha }}
 
       - name: Wait for Rollout
         run: |
-          kubectl rollout status deployment/employee-api \
-            -n employee \
-            --timeout=180s
+          DEPLOYMENT=$(kubectl get deployment \
+          -n employee-ns \
+          -l app.kubernetes.io/instance=employee-api \
+          -o jsonpath='{.items[0].metadata.name}')
+          kubectl rollout status deployment/$DEPLOYMENT \
+            -n employee-ns --timeout=180s
   smoke-test:
     name: Smoke Test
     runs-on: self-hosted
@@ -189,14 +179,18 @@ jobs:
 
     steps:
 
-      # - name: Verify Pods
-      #   run: |
-      #     kubectl get pods -n employee
+      - name: Verify Pods
+        run: |
+          kubectl get pods -n employee-ns
 
-      # - name: Check Deployment
-      #   run: |
-      #     kubectl rollout status deployment/employee-api \
-      #       -n employee
+      - name: Check Deployment
+        run: |
+          DEPLOYMENT=$(kubectl get deployment \
+          -n employee-ns \
+          -l app.kubernetes.io/instance=employee-api \
+          -o jsonpath='{.items[0].metadata.name}')
+          kubectl rollout status deployment/$DEPLOYMENT \
+            -n employee-ns
 
       - name: Health Endpoint
         run: |
@@ -217,7 +211,7 @@ jobs:
           echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Image: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Namespace: employee" >> $GITHUB_STEP_SUMMARY
+          echo "- Namespace: employee-ns" >> $GITHUB_STEP_SUMMARY
           echo "- Status: Success" >> $GITHUB_STEP_SUMMARY
   rollback:
     name: Rollback Deployment
