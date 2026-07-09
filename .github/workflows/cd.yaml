@@ -11,17 +11,99 @@ on:
 jobs:
 
   deploy:
-
+    name: Deploy to Kubernetes
+    
     if: >
-      github.event.workflow_run.conclusion == 'success'
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: self-hosted
 
-    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: azure/setup-helm@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       
-      - name: Download Helm Package
-        uses: actions/download-artifact@v4
-        with:
-          name: helm-chart
-          path: dist
+      - name: Verify Cluster
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      # - name: Configure Kubernetes Context
+      #   run: |
+      #     mkdir -p ~/.kube
+      #     echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install employee-api ./helm/employee-api \
+            --namespace employee-ns \
+            --create-namespace \
+            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/employee-api \
+            --set image.tag=${{ github.sha }}
+
+      - name: Wait for Rollout
+        run: |
+          DEPLOYMENT=$(kubectl get deployment \
+          -n employee-ns \
+          -l app.kubernetes.io/instance=employee-api \
+          -o jsonpath='{.items[0].metadata.name}')
+          kubectl rollout status deployment/$DEPLOYMENT \
+            -n employee-ns --timeout=180s
+  smoke-test:
+    name: Smoke Test
+    runs-on: self-hosted
+
+    needs: deploy
+
+    steps:
+
+      - name: Verify Pods
+        run: |
+          kubectl get pods -n employee-ns
+
+      - name: Check Deployment
+        run: |
+          DEPLOYMENT=$(kubectl get deployment \
+          -n employee-ns \
+          -l app.kubernetes.io/instance=employee-api \
+          -o jsonpath='{.items[0].metadata.name}')
+          kubectl rollout status deployment/$DEPLOYMENT \
+            -n employee-ns
+
+      - name: Health Endpoint
+        run: |
+          for i in {1..12}; do
+          if curl --fail http://employee.local/health; then
+            echo "Application is healthy"
+            exit 0
+          fi
+
+          echo "Waiting for application..."
+          sleep 10
+          done
+
+          echo "Smoke test failed"
+          exit 1
+      - name: Deployment Summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Image: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Namespace: employee-ns" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: Success" >> $GITHUB_STEP_SUMMARY
+  rollback:
+    name: Rollback Deployment
+    runs-on: self-hosted
+
+    needs: smoke-test
+
+    if: ${{ failure() }}
+
+    steps:
+
+      - name: Rollback Helm Release
+        run: |
+          helm rollback employee-api
