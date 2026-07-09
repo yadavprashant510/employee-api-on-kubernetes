@@ -20,10 +20,7 @@ def register_middlewares(app):
     @app.after_request
     def after_request(response):
 
-        duration = round(
-            (time.time() - g.start_time) * 1000,
-            2
-        )
+        duration = round((time.time() - g.start_time) * 1000, 2)
 
         logger.info(
             "HTTP Request",
@@ -36,8 +33,8 @@ def register_middlewares(app):
                 "remote_addr": request.remote_addr,
                 "pod": os.getenv("HOSTNAME"),
                 "service": "employee-api",
-                "version": "1.0.0"
-            }
+                "version": "1.0.0",
+            },
         )
 
         return response

@@ -11,9 +11,7 @@ health_bp = Blueprint("health", __name__)
 def health():
 
     if Config.SIMULATION_MODE == "health-fail":
-        return jsonify({
-            "status": "DOWN"
-        }), 500
+        return jsonify({"status": "DOWN"}), 500
 
     if Config.SIMULATION_MODE == "slow-health":
         time.sleep(10)
@@ -25,9 +23,7 @@ def health():
 def ready():
 
     if Config.SIMULATION_MODE == "ready-fail":
-        return jsonify({
-            "status": "NOT READY"
-        }), 500
+        return jsonify({"status": "NOT READY"}), 500
 
     if Config.SIMULATION_MODE == "slow-ready":
         time.sleep(10)

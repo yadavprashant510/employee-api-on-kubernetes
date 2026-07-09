@@ -1,0 +1,9 @@
+config:
+  ENVIRONMENT: development
+
+autoscaling:
+  enabled: false
+
+rbac:
+
+  create: false

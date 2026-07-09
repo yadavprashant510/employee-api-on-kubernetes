@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "employee-api.name" . }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "employee-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "employee-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      name: employee-api-pod
+      labels:
+        {{- include "employee-api.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ if .Values.serviceAccount.create }}
+            {{ include "employee-api.name" . }}-svc-account
+            {{ else }}
+            {{ .Values.serviceAccount.name }}
+            {{ end }}
+      containers:
+      - name: {{ include "employee-api.name" . }}-container
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        ports:
+        - containerPort: {{ .Values.container.port }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        startupProbe:
+
+          httpGet:
+
+            path: /health
+
+            port: {{ .Values.container.port }}
+
+          periodSeconds: 5
+
+          failureThreshold: 30
+
+        livenessProbe:
+
+          httpGet:
+
+            path: /health
+
+            port: {{ .Values.container.port }}
+
+          initialDelaySeconds: 10
+
+          periodSeconds: 10
+
+        readinessProbe:
+
+          httpGet:
+
+            path: /ready
+
+            port: {{ .Values.container.port }}
+
+          initialDelaySeconds: 5
+
+          periodSeconds: 5
+        env:
+        - name: SIMULATION_MODE
+          value: "normal"
+        envFrom:
+        - configMapRef:
+            name: {{ include "employee-api.name" . }}-config
+
+        - secretRef:
+            name: {{ include "employee-api.name" . }}-secret
+        volumeMounts:
+          - name: employee-storage
+            mountPath: /app/data
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+        - name: employee-storage
+          persistentVolumeClaim:
+            claimName: {{ include "employee-api.name" . }}-pvc
+        - name: tmp
+          emptyDir: {}

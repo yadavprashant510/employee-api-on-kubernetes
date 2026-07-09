@@ -2,17 +2,28 @@ IMAGE_NAME=employee-api
 IMAGE_TAG=v5
 CLUSTER_NAME=employee-cluster
 
-build:
-	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 load:
 	kind load docker-image $(IMAGE_NAME):$(IMAGE_TAG) --name $(CLUSTER_NAME)
 
-deploy:
-	kubectl apply -f k8s/
+.PHONY: lint test build deploy clean
 
-test:
-	./scripts/smoke-test.sh
+lint:
+	helm lint helm/employee-api
+
+template:
+	helm template employee-api ./helm/employee-api
+
+build:
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
+deploy:
+	helm upgrade --install employee-api ./helm/employee-api \
+		--namespace employee-ns \
+		--create-namespace
+
+logs:
+	kubectl logs -f deployment/employee-api -n employee-ns
 
 clean:
-	kubectl delete -f k8s/
+	helm uninstall employee-api -n employee

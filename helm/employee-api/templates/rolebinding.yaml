@@ -1,0 +1,24 @@
+{{- if .Values.rbac.create }}
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+
+metadata:
+  name: {{ include "employee-api.name" . }}-binding
+  namespace: {{ .Values.namespace.name }}
+
+subjects:
+
+- kind: ServiceAccount
+  name: {{ include "employee-api.serviceAccountName" . }}
+  namespace: {{ .Values.namespace.name }}
+
+roleRef:
+
+  apiGroup: rbac.authorization.k8s.io
+
+  kind: Role
+
+  name: {{ include "employee-api.name" . }}-role
+
+{{- end }}

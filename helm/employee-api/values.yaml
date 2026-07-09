@@ -1,0 +1,78 @@
+replicaCount: 2
+
+image:
+  repository: yadavprashant510/employee-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
+namespace:
+  name: employee-ns
+container:
+  port: 5000
+
+rbac:
+
+  create: true
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  host: employee.local
+  path: /
+  pathType: Prefix
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+app:
+  name: employee-api
+  version: "1.0.0"
+
+serviceAccount:
+  create: true
+  name: employee-api-svc-account
+
+securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsUser: 1000
+  capabilities:
+    drop:
+      - ALL
+config:
+
+  APP_NAME: employee-api
+
+  APP_VERSION: "1.0.0"
+
+  LOG_LEVEL: INFO
+
+  ENVIRONMENT: development
+
+# later we will move to secret vault this for practice purpose never hardcode the sensitive info in gitq
+secret:
+  DATABASE_USER: admin
+  DATABASE_PASSWORD: password123
+  JWT_SECRET: my-super-secret-key

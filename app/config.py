@@ -3,7 +3,7 @@ import os
 
 class Config:
     APP_NAME = os.getenv("APP_NAME", "Employee API")
-    APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
+    APP_VERSION = os.getenv("APP_VERSION", "1.0.1")
     ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
     HOST = os.getenv("HOST", "0.0.0.0")

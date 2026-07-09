@@ -1,0 +1,25 @@
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[project]
+name = "employee-api"
+version="0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "Flask==3.1.1",
+    "gunicorn==23.0.0",
+    "python-json-logger"
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "flake8",
+    "black",
+
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
