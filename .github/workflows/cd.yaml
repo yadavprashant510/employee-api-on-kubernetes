@@ -84,7 +84,7 @@ jobs:
       - name: Health Endpoint
         run: |
           for i in {1..12}; do
-          if curl --fail http://employee.local/health; then
+          if curl --fail http://employee.local/h; then
             echo "Application is healthy"
             exit 0
           fi
