@@ -17,11 +17,16 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.head_branch == 'main'
-    runs-on: self-hosted
+    runs-on:
+    - self-hosted
+    - kubernetes
+    - kind
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       
       - name: Verify Cluster
         run: |
@@ -42,7 +47,7 @@ jobs:
             --namespace employee-ns \
             --create-namespace \
             --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/employee-api \
-            --set image.tag=${{ github.sha }}
+            --set image.tag=${{ github.event.workflow_run.head_sha }}
 
       - name: Wait for Rollout
         run: |
@@ -54,7 +59,10 @@ jobs:
             -n employee-ns --timeout=180s
   smoke-test:
     name: Smoke Test
-    runs-on: self-hosted
+    runs-on:
+      - self-hosted
+      - kubernetes
+      - kind
 
     needs: deploy
 
@@ -91,17 +99,19 @@ jobs:
         run: |
           echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Image: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Image: ${{ github.event.workflow_run.head_sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- Namespace: employee-ns" >> $GITHUB_STEP_SUMMARY
           echo "- Status: Success" >> $GITHUB_STEP_SUMMARY
   rollback:
     name: Rollback Deployment
-    runs-on: self-hosted
+    runs-on:
+      - self-hosted
+      - kubernetes
+      - kind
 
     needs: smoke-test
 
-    if: ${{ failure() }}
-
+    if: ${{ always() && needs.smoke-test.result == 'failure' }}
     steps:
 
       - name: Rollback Helm Release
