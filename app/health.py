@@ -9,14 +9,20 @@ health_bp = Blueprint("health", __name__)
 
 @health_bp.route("/health")
 def health():
-
-    if Config.SIMULATION_MODE == "health-fail":
-        return jsonify({"status": "DOWN"}), 500
-
-    if Config.SIMULATION_MODE == "slow-health":
-        time.sleep(10)
-
-    return jsonify({"status": "UP"})
+    """
+    Health Check Endpoint
+    ---
+    responses:
+      200:
+        description: Application health status
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: healthy
+    """
+    return {"status": "healthy"}
 
 
 @health_bp.route("/ready")

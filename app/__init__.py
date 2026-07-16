@@ -5,12 +5,14 @@ from app.health import health_bp
 from app.logger import get_logger
 from app.routes import employee_bp
 from app.middleware import register_middlewares
+from flasgger import Swagger
 
 logger = get_logger(__name__)
 
 
 def create_app():
     app = Flask(__name__)
+    swagger = Swagger(app)
 
     register_middlewares(app)
     app.register_blueprint(employee_bp)
