@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 
 def create_app():
     app = Flask(__name__)
-    swagger = Swagger(app)
+    Swagger(app)
 
     register_middlewares(app)
     app.register_blueprint(employee_bp)
