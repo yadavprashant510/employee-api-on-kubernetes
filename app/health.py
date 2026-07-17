@@ -3,11 +3,21 @@ import time
 from flask import Blueprint, jsonify
 
 from app.config import Config
+from flasgger import swag_from
 
 health_bp = Blueprint("health", __name__)
 
 
 @health_bp.route("/health")
+@swag_from({
+    "tags": ["Health"],
+    "summary": "Application health check",
+    "responses": {
+        200: {
+            "description": "Application is healthy"
+        }
+    }
+})
 def health():
     """
     Health Check Endpoint

@@ -12,7 +12,17 @@ logger = get_logger(__name__)
 
 def create_app():
     app = Flask(__name__)
-    Swagger(app)
+    Swagger(
+    app,
+    template={
+        "swagger": "2.0",
+        "info": {
+            "title": "Employee API",
+            "description": "Employee Management API",
+            "version": "1.0.0",
+        },
+    },
+)
 
     register_middlewares(app)
     app.register_blueprint(employee_bp)
