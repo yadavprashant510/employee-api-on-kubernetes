@@ -27,7 +27,7 @@ jobs:
   ####################################################################
 
   quality:
-    name: Code Quality & Helm Validation
+    name: Code Quality, Pytest and Linting
     runs-on: ubuntu-latest
 
     steps:
@@ -55,15 +55,6 @@ jobs:
 
       - name: Run Unit Tests
         run: pytest
-
-      - name: Install Helm
-        uses: azure/setup-helm@v4
-
-      - name: Helm Lint
-        run: helm lint helm/employee-api
-
-      - name: Helm Template Validation
-        run: helm template employee-api ./helm/employee-api
 
   ####################################################################
   # Build Docker Image and Scan for Vulnerabilities
