@@ -11,6 +11,7 @@ jobs:
   promote:
     name: Promote Image to PROD
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Clone GitOps Repository
