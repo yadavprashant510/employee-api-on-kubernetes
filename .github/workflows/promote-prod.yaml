@@ -1,0 +1,43 @@
+name: Promote to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Docker image tag to promote"
+        required: true
+
+jobs:
+  promote:
+    name: Promote Image to PROD
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone GitOps Repository
+        run: |
+          git clone \
+          https://x-access-token:${{ secrets.PLATFORM_REPO_TOKEN }}@github.com/yadavprashant510/employee-platform.git
+
+      - name: Update PROD Image Tag
+        run: |
+          cd employee-platform
+
+          sed -i.bak \
+          "s/tag:.*/tag: \"${{ github.event.inputs.image_tag }}\"/" \
+          environments/prod/values.yaml
+
+          rm -f environments/prod/values.yaml.bak
+
+      - name: Commit Changes
+        run: |
+          cd employee-platform
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add environments/prod/values.yaml
+
+          git diff --cached --quiet || \
+          git commit -m "chore: promote image ${{ github.event.inputs.image_tag }} to prod"
+
+          git push origin main
