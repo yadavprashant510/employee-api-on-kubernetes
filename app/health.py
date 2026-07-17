@@ -9,15 +9,13 @@ health_bp = Blueprint("health", __name__)
 
 
 @health_bp.route("/health")
-@swag_from({
-    "tags": ["Health"],
-    "summary": "Application health check",
-    "responses": {
-        200: {
-            "description": "Application is healthy"
-        }
+@swag_from(
+    {
+        "tags": ["Health"],
+        "summary": "Application health check",
+        "responses": {200: {"description": "Application is healthy"}},
     }
-})
+)
 def health():
     """
     Health Check Endpoint

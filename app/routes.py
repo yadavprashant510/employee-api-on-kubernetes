@@ -16,15 +16,13 @@ employees = {1: {"id": 1, "name": "Prashant", "role": "DevOps Engineer"}}
 
 
 @employee_bp.route("/")
-@swag_from({
-    "tags": ["Application"],
-    "summary": "Application information",
-    "responses": {
-        200: {
-            "description": "Application details"
-        }
+@swag_from(
+    {
+        "tags": ["Application"],
+        "summary": "Application information",
+        "responses": {200: {"description": "Application details"}},
     }
-})
+)
 def home():
     return jsonify(
         {
@@ -37,49 +35,40 @@ def home():
 
 
 @employee_bp.route("/api/v1/employees", methods=["GET"])
-@swag_from({
-    "tags": ["Employees"],
-    "responses": {
-        200: {
-            "description": "List all employees",
-            "examples": {
-                "application/json": [
-                    {
-                        "id": 1,
-                        "name": "Prashant",
-                        "role": "DevOps Engineer"
-                    }
-                ]
+@swag_from(
+    {
+        "tags": ["Employees"],
+        "responses": {
+            200: {
+                "description": "List all employees",
+                "examples": {
+                    "application/json": [
+                        {"id": 1, "name": "Prashant", "role": "DevOps Engineer"}
+                    ]
+                },
             }
-        }
+        },
     }
-})
+)
 def get_employees():
     logger.info("Fetching all employees")
     return jsonify(list(employees.values()))
 
 
 @employee_bp.route("/api/v1/employees/<int:employee_id>", methods=["GET"])
-@swag_from({
-    "tags": ["Employees"],
-    "summary": "Get employee by ID",
-    "parameters": [
-        {
-            "name": "employee_id",
-            "in": "path",
-            "required": True,
-            "type": "integer"
-        }
-    ],
-    "responses": {
-        200: {
-            "description": "Employee found"
+@swag_from(
+    {
+        "tags": ["Employees"],
+        "summary": "Get employee by ID",
+        "parameters": [
+            {"name": "employee_id", "in": "path", "required": True, "type": "integer"}
+        ],
+        "responses": {
+            200: {"description": "Employee found"},
+            404: {"description": "Employee not found"},
         },
-        404: {
-            "description": "Employee not found"
-        }
     }
-})
+)
 def get_employee(employee_id):
 
     employee = employees.get(employee_id)
@@ -91,36 +80,28 @@ def get_employee(employee_id):
 
 
 @employee_bp.route("/api/v1/employees", methods=["POST"])
-@swag_from({
-    "tags": ["Employees"],
-    "summary": "Create employee",
-    "parameters": [
-        {
-            "name": "body",
-            "in": "body",
-            "required": True,
-            "schema": {
-                "type": "object",
-                "required": ["name", "role"],
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "example": "Prashant"
+@swag_from(
+    {
+        "tags": ["Employees"],
+        "summary": "Create employee",
+        "parameters": [
+            {
+                "name": "body",
+                "in": "body",
+                "required": True,
+                "schema": {
+                    "type": "object",
+                    "required": ["name", "role"],
+                    "properties": {
+                        "name": {"type": "string", "example": "Prashant"},
+                        "role": {"type": "string", "example": "DevOps Engineer"},
                     },
-                    "role": {
-                        "type": "string",
-                        "example": "DevOps Engineer"
-                    }
-                }
+                },
             }
-        }
-    ],
-    "responses": {
-        201: {
-            "description": "Employee created"
-        }
+        ],
+        "responses": {201: {"description": "Employee created"}},
     }
-})
+)
 def create_employee():
 
     data = request.get_json()
@@ -150,42 +131,31 @@ def create_employee():
 
 
 @employee_bp.route("/api/v1/employees/<int:employee_id>", methods=["PUT"])
-@swag_from({
-    "tags": ["Employees"],
-    "summary": "Update employee",
-    "parameters": [
-        {
-            "name": "employee_id",
-            "in": "path",
-            "required": True,
-            "type": "integer"
-        },
-        {
-            "name": "body",
-            "in": "body",
-            "required": True,
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
+@swag_from(
+    {
+        "tags": ["Employees"],
+        "summary": "Update employee",
+        "parameters": [
+            {"name": "employee_id", "in": "path", "required": True, "type": "integer"},
+            {
+                "name": "body",
+                "in": "body",
+                "required": True,
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "role": {"type": "string"},
                     },
-                    "role": {
-                        "type": "string"
-                    }
-                }
-            }
-        }
-    ],
-    "responses": {
-        200: {
-            "description": "Employee updated"
+                },
+            },
+        ],
+        "responses": {
+            200: {"description": "Employee updated"},
+            404: {"description": "Employee not found"},
         },
-        404: {
-            "description": "Employee not found"
-        }
     }
-})
+)
 def update_employee(employee_id):
 
     employee = employees.get(employee_id)
@@ -204,26 +174,19 @@ def update_employee(employee_id):
 
 
 @employee_bp.route("/api/v1/employees/<int:employee_id>", methods=["DELETE"])
-@swag_from({
-    "tags": ["Employees"],
-    "summary": "Delete employee",
-    "parameters": [
-        {
-            "name": "employee_id",
-            "in": "path",
-            "required": True,
-            "type": "integer"
-        }
-    ],
-    "responses": {
-        200: {
-            "description": "Employee deleted"
+@swag_from(
+    {
+        "tags": ["Employees"],
+        "summary": "Delete employee",
+        "parameters": [
+            {"name": "employee_id", "in": "path", "required": True, "type": "integer"}
+        ],
+        "responses": {
+            200: {"description": "Employee deleted"},
+            404: {"description": "Employee not found"},
         },
-        404: {
-            "description": "Employee not found"
-        }
     }
-})
+)
 def delete_employee(employee_id):
 
     if employee_id not in employees:
